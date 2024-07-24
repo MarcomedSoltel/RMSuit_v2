@@ -1,0 +1,49 @@
+﻿@page "/userselection"
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>¿Qué camarero eres?</h3>
+
+@if (Users.Any())
+{
+    <div>
+        <select @bind="selectedUser" id="userSelect" title="Seleccione un camarero">
+            <option value="">Seleccione un camarero</option>
+            @foreach (var user in Users)
+            {
+                <option value="@user">@user</option>
+            }
+        </select>
+        <button @onclick="ConfirmSelection">Aceptar</button>
+    </div>
+}
+else
+{
+    <p>No hay camareros disponibles.</p>
+}
+
+@if (isButtonClicked)
+{
+    <p>Debes seleccionar un camarero, por favor.</p>
+}
+
+@code {
+    private List<string> Users = new List<string> { "Ana Guerra", "Fabián Martín", "Josefa Guerra", "Manuel del Saz", "Miguel Ayuso" };
+    private string? selectedUser;
+    private bool isButtonClicked = false;  // Variable para controlar el estado del botón
+
+    private void ConfirmSelection()
+    {
+        isButtonClicked = true;  // Actualiza la variable para mostrar el mensaje
+        Console.WriteLine($"Selected User: {selectedUser}");  // Muestra un mensaje en depuración
+        if (!string.IsNullOrEmpty(selectedUser))
+        {
+            Console.WriteLine($"Navigating to /?user={selectedUser}");  
+            Navigation.NavigateTo($"/?user={selectedUser}", true);
+        }
+        else
+        {
+            Console.WriteLine("Por favor, seleccione un camarero.");
+        }
+    }
+}

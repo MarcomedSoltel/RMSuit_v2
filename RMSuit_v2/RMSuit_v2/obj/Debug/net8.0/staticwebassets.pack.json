@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\usuario\\source\\repos\\RMSuit_v2\\RMSuit_v2\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\RMSuit_v2.bundle.scp.css",
+      "PackagePath": "staticwebassets\\RMSuit_v2.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\usuario\\source\\repos\\RMSuit_v2\\RMSuit_v2\\wwwroot\\Imagenes\\mesa.png",
+      "PackagePath": "staticwebassets\\Imagenes\\mesa.png"
+    },
+    {
+      "Id": "C:\\Users\\usuario\\source\\repos\\RMSuit_v2\\RMSuit_v2\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\usuario\\source\\repos\\RMSuit_v2\\RMSuit_v2\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\usuario\\source\\repos\\RMSuit_v2\\RMSuit_v2\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\usuario\\source\\repos\\RMSuit_v2\\RMSuit_v2\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.RMSuit_v2.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.RMSuit_v2.props",
+      "PackagePath": "build\\RMSuit_v2.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.RMSuit_v2.props",
+      "PackagePath": "buildMultiTargeting\\RMSuit_v2.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.RMSuit_v2.props",
+      "PackagePath": "buildTransitive\\RMSuit_v2.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

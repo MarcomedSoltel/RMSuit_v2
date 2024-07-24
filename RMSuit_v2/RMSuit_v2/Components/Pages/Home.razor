@@ -1,0 +1,63 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.WebUtilities
+@using RMSuit_v2.Components.TableComponents
+
+<PageTitle>Home</PageTitle>
+
+@if (UserName == null)
+{
+    <p>Por favor, seleccione un camarero.</p>
+}
+else
+{
+    <h1>RMSuit</h1>
+    <h3>¡Bienvenido, @(UserName)!</h3>
+
+    <div>
+        <label for="locationSelect">Seleccione una ubicación:</label>
+        <select id="locationSelect" @bind="selectedLocation">
+            <option value="">--Seleccione una opción--</option>
+            <option value="salonmapa">Salón</option>
+            <option value="terraza">Terraza</option>
+        </select>
+        <button @onclick="NavigateToSelectedLocation">Confirmar</button>
+    </div>
+}
+
+@code {
+    private string? UserName { get; set; }
+    private string? selectedLocation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = new Uri(Navigation.Uri);
+        var queryParameters = QueryHelpers.ParseQuery(uri.Query);
+
+        if (queryParameters.TryGetValue("user", out var userName))
+        {
+            UserName = userName;
+        }
+        else
+        {
+            // Redirige a la página de selección si no se ha especificado un camarero
+            Navigation.NavigateTo("/userselection");
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private void NavigateToSelectedLocation()
+    {
+        if (!string.IsNullOrEmpty(selectedLocation))
+        {
+            Navigation.NavigateTo($"/{selectedLocation}");
+        }
+        else
+        {
+            // Aquí puedes manejar el caso donde no se ha seleccionado ninguna opción, por ejemplo mostrando un mensaje de error.
+        }
+    }
+}
