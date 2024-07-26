@@ -6,6 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Configure HttpClient for dependency injection
+builder.Services.AddHttpClient();
+
+// Optionally, register your ApiService
+builder.Services.AddScoped<ApiService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

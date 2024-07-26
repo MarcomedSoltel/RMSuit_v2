@@ -1,13 +1,14 @@
 ﻿@page "/userselection"
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
+@inject ApiService ApiService
+@inject ILogger<UserSelection> Logger
 
 <h3>¿Qué camarero eres?</h3>
 
 @if (Users.Any())
 {
     <div>
-        <select @bind="selectedUser" id="userSelect" title="Seleccione un camarero">
+        <select @bind="selectedUser" aria-label="Seleccione un camarero">
             <option value="">Seleccione un camarero</option>
             @foreach (var user in Users)
             {
@@ -17,33 +18,52 @@
         <button @onclick="ConfirmSelection">Aceptar</button>
     </div>
 }
+else if (isLoading)
+{
+    <p>Cargando camareros...</p>
+}
 else
 {
     <p>No hay camareros disponibles.</p>
 }
 
-@if (isButtonClicked)
-{
-    <p>Debes seleccionar un camarero, por favor.</p>
-}
-
 @code {
-    private List<string> Users = new List<string> { "Ana Guerra", "Fabián Martín", "Josefa Guerra", "Manuel del Saz", "Miguel Ayuso" };
+    private List<string> Users = new List<string>();
     private string? selectedUser;
-    private bool isButtonClicked = false;  // Variable para controlar el estado del botón
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Iniciando carga de camareros...");
+
+        try
+        {
+            Users = await ApiService.GetListaCamareros();
+            Logger.LogInformation($"Usuarios cargados: {string.Join(", ", Users)}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al cargar camareros");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 
     private void ConfirmSelection()
     {
-        isButtonClicked = true;  // Actualiza la variable para mostrar el mensaje
-        Console.WriteLine($"Selected User: {selectedUser}");  // Muestra un mensaje en depuración
+        Logger.LogInformation("ConfirmSelection invoked");
+        Logger.LogInformation($"Selected User: {selectedUser}");
+
         if (!string.IsNullOrEmpty(selectedUser))
         {
-            Console.WriteLine($"Navigating to /?user={selectedUser}");  
+            Logger.LogInformation($"Navigating to /?user={selectedUser}");
             Navigation.NavigateTo($"/?user={selectedUser}", true);
         }
         else
         {
-            Console.WriteLine("Por favor, seleccione un camarero.");
+            Logger.LogWarning("Por favor, seleccione un camarero.");
         }
     }
 }
