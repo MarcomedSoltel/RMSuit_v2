@@ -1,0 +1,48 @@
+﻿@namespace RMSuit_v2.Components.TableComponents
+@using RMSuit_v2.Models
+
+<div class="table" @onclick="ToggleMenu">
+    <img src="@GetImagePath()" alt="Mesa @Table?.Number" />
+    <p>Mesa @Table?.Number</p>
+</div>
+
+@if (showMenu)
+{
+    <div class="menu">
+        <button @onclick="() => ChangeState(TableState.Neutral)">Neutral</button>
+        <button @onclick="() => ChangeState(TableState.Reservado)">Reservada</button>
+        <button @onclick="() => ChangeState(TableState.Ocupado)">Ocupado</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Table Table { get; set; } = new Table(); // Inicializa la propiedad
+
+    private bool showMenu = false;
+
+    private string GetImagePath()
+    {
+        return Table.State switch
+        {
+            TableState.Reservado => "imagenes/mesa.png",
+            TableState.Ocupado => "imagenes/mesa.png",
+            _ => "imagenes/mesa.png",
+        };
+    }
+
+    private void ToggleMenu()
+    {
+        showMenu = !showMenu;
+    }
+
+    private void ChangeState(TableState newState)
+    {
+        if (Table != null)
+        {
+            Table.State = newState;
+            showMenu = false;
+            StateHasChanged(); // Forzar la actualización de la UI
+        }
+    }
+}

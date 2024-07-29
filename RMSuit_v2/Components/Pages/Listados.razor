@@ -1,0 +1,214 @@
+﻿@page "/listados"
+@using RMSuit_v2.Models
+@inject ApiService ApiService
+@inject ILogger<Listados> Logger
+
+<h3>Listados</h3>
+
+<div class="button-group mb-3">
+    <button @onclick="LoadDrawings" class="btn btn-primary">Drawings</button>
+    <button @onclick="LoadEmployees" class="btn btn-primary">Employees</button>
+    <!-- <button @onclick="LoadSalonPhotos">Salon Photos</button>-->
+    <button @onclick="LoadSalons" class="btn btn-primary">Salons</button>
+    <!-- <button @onclick="LoadSalonTables">Salon Tables</button> -->
+    <button @onclick="LoadWaiters" class="btn btn-primary">Waiters</button>
+</div>
+
+<div class="mb-3">
+    <input type="text" value="@searchQuery" placeholder="Buscar por nombre..." @oninput="OnInputChange" @onkeydown="OnKeyDown" class="form-control" />
+</div>
+
+@if (filteredItems.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                @if (filteredItems.First() is Drawing)
+                {
+                    <th @onclick="() => SortBy(nameof(Drawing.dibujos))">Dibujos</th>
+                    <th @onclick="() => SortBy(nameof(Drawing.estado))">Estado</th>
+                    <th @onclick="() => SortBy(nameof(Drawing.activo))">Activo</th>
+                    <th @onclick="() => SortBy(nameof(Drawing.transparente))">Transparente</th>
+                }
+                else if (filteredItems.First() is Employee)
+                {
+                    <th @onclick="() => SortBy(nameof(Employee.empleado1))">Empleado ID</th>
+                    <th @onclick="() => SortBy(nameof(Employee.nombre))">Nombre</th>
+                    <th @onclick="() => SortBy(nameof(Employee.direccion))">Dirección</th>
+                    <th @onclick="() => SortBy(nameof(Employee.telefono))">Teléfono</th>
+                    <th @onclick="() => SortBy(nameof(Employee.poblacion))">Población</th>
+                    <th @onclick="() => SortBy(nameof(Employee.clave))">Clave</th>
+                    <th @onclick="() => SortBy(nameof(Employee.rango))">Rango</th>
+                    <th @onclick="() => SortBy(nameof(Employee.nivel))">Nivel</th>
+                }
+                else if (filteredItems.First() is Salon)
+                {
+                    <th @onclick="() => SortBy(nameof(Salon.salon))">Salon ID</th>
+                    <th @onclick="() => SortBy(nameof(Salon.nombre))">Nombre</th>
+                    <th @onclick="() => SortBy(nameof(Salon.recargo))">Recargo</th>
+                    <th @onclick="() => SortBy(nameof(Salon.tarifa))">Tarifa</th>
+                    <th @onclick="() => SortBy(nameof(Salon.imagen))">Imagen</th>
+                    <th @onclick="() => SortBy(nameof(Salon.colorFondo))">Color Fondo</th>
+                    <th @onclick="() => SortBy(nameof(Salon.reparto))">Reparto</th>
+                    <th @onclick="() => SortBy(nameof(Salon.propina))">Propina</th>
+                    <th @onclick="() => SortBy(nameof(Salon.porcentajePropina))">Porcentaje Propina</th>
+                    <th @onclick="() => SortBy(nameof(Salon.reposicion))">Reposición</th>
+                    <th @onclick="() => SortBy(nameof(Salon.articulosApertura))">Artículos Apertura</th>
+                }
+                else if (filteredItems.First() is Camarero)
+                {
+                    <th @onclick="() => SortBy(nameof(Camarero.CamareroId))">Camarero ID</th>
+                    <th @onclick="() => SortBy(nameof(Camarero.Nombre))">Nombre</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in filteredItems)
+            {
+                <tr>
+                    @if (item is Drawing drawing)
+                    {
+                        <td>@drawing.dibujos</td>
+                        <td>@drawing.estado</td>
+                        <td>@drawing.activo</td>
+                        <td>@drawing.transparente</td>
+                    }
+                    else if (item is Employee employee)
+                    {
+                        <td>@employee.empleado1</td>
+                        <td>@employee.nombre</td>
+                        <td>@employee.direccion</td>
+                        <td>@employee.telefono</td>
+                        <td>@employee.poblacion</td>
+                        <td>@employee.clave</td>
+                        <td>@employee.rango</td>
+                        <td>@employee.nivel</td>
+                    }
+                    else if (item is Salon salon)
+                    {
+                        <td>@salon.salon</td>
+                        <td>@salon.nombre</td>
+                        <td>@salon.recargo</td>
+                        <td>@salon.tarifa</td>
+                        <td>@salon.imagen</td>
+                        <td>@salon.colorFondo</td>
+                        <td>@salon.reparto</td>
+                        <td>@salon.propina</td>
+                        <td>@salon.porcentajePropina</td>
+                        <td>@salon.reposicion</td>
+                        <td>@salon.articulosApertura</td>
+                    }
+                    else if (item is Camarero camarero)
+                    {
+                        <td>@camarero.CamareroId</td>
+                        <td>@camarero.Nombre</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (isLoading)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <p>No hay elementos disponibles.</p>
+}
+
+@code {
+    private List<object> items = new List<object>();
+    private List<object> filteredItems = new List<object>();
+    private bool isLoading = false;
+    private string sortColumn = "";
+    private bool ascending = true;
+    private string searchQuery = "";
+
+    private async Task LoadDrawings()
+    {
+        isLoading = true;
+        items = (await ApiService.GetDrawings()).Cast<object>().ToList();
+        FilterItems(); // Aplicar el filtro inicial
+        isLoading = false;
+    }
+
+    private async Task LoadEmployees()
+    {
+        isLoading = true;
+        items = (await ApiService.GetEmployees()).Cast<object>().ToList();
+        FilterItems();
+        isLoading = false;
+    }
+
+    private async Task LoadSalons()
+    {
+        isLoading = true;
+        items = (await ApiService.GetSalons()).Cast<object>().ToList();
+        FilterItems();
+        isLoading = false;
+    }
+
+    private async Task LoadWaiters()
+    {
+        isLoading = true;
+        items = (await ApiService.GetWaiters()).Cast<object>().ToList();
+        FilterItems();
+        isLoading = false;
+    }
+
+    private void SortBy(string columnName)
+    {
+        sortColumn = columnName;
+        ascending = !ascending;
+
+        if (ascending)
+        {
+            filteredItems = filteredItems.OrderBy(item => GetPropertyValue(item, sortColumn)).ToList();
+        }
+        else
+        {
+            filteredItems = filteredItems.OrderByDescending(item => GetPropertyValue(item, sortColumn)).ToList();
+        }
+    }
+
+    private object GetPropertyValue(object obj, string propertyName)
+    {
+        var prop = obj.GetType().GetProperty(propertyName);
+        return prop?.GetValue(obj);
+    }
+
+    private void FilterItems()
+    {
+        if (string.IsNullOrEmpty(searchQuery))
+        {
+            filteredItems = items;
+        }
+        else
+        {
+            filteredItems = items.Where(item =>
+            {
+                var property = item.GetType().GetProperty("nombre") ?? item.GetType().GetProperty("Nombre");
+                var value = property?.GetValue(item)?.ToString();
+                return !string.IsNullOrEmpty(value) && value.Contains(searchQuery, StringComparison.OrdinalIgnoreCase);
+            }).ToList();
+        }
+
+        // Reaplicar el ordenamiento después del filtrado
+        SortBy(sortColumn);
+    }
+
+    private void OnInputChange(ChangeEventArgs e)
+    {
+        searchQuery = e.Value.ToString();
+        FilterItems();
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            FilterItems();
+        }
+    }
+}

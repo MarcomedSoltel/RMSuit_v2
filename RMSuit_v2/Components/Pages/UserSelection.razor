@@ -1,0 +1,70 @@
+﻿@page "/userselection"
+
+@inject NavigationManager Navigation
+@inject ApiService ApiService
+@inject ILogger<UserSelection> Logger
+
+<h3>¿Qué camarero eres?</h3>
+
+@if (Users.Any())
+{
+    <div>
+        <select @bind="selectedUser" aria-label="Seleccione un camarero">
+            <option value="">Seleccione un camarero</option>
+            @foreach (var user in Users)
+            {
+                <option value="@user">@user</option>
+            }
+        </select>
+        <button @onclick="ConfirmSelection">Aceptar</button>
+    </div>
+}
+else if (isLoading)
+{
+    <p>Cargando camareros...</p>
+}
+else
+{
+    <p>No hay camareros disponibles.</p>
+}
+
+@code {
+    private List<string> Users = new List<string>();
+    private string? selectedUser;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Iniciando carga de camareros...");
+
+        try
+        {
+            Users = await ApiService.GetListaCamareros();
+            Logger.LogInformation($"Usuarios cargados: {string.Join(", ", Users)}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al cargar camareros");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ConfirmSelection()
+    {
+        Logger.LogInformation("ConfirmSelection invoked");
+        Logger.LogInformation($"Selected User: {selectedUser}");
+
+        if (!string.IsNullOrEmpty(selectedUser))
+        {
+            Logger.LogInformation($"Navigating to /?user={selectedUser}");
+            Navigation.NavigateTo($"/?user={selectedUser}", true);
+        }
+        else
+        {
+            Logger.LogWarning("Por favor, seleccione un camarero.");
+        }
+    }
+}
