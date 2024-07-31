@@ -10,4 +10,17 @@ namespace RMSuit_v2.Models
         [JsonPropertyName("nombre")]
         public string Nombre { get; set; } = string.Empty;
     }
+
+
+    public class AddWaiterRequest
+    {
+        public string Nombre { get; set; }
+
+    }
+
+    public class UpdateWaiterRequest
+    {
+        public string Nombre { get; set; }
+    }
+
 }

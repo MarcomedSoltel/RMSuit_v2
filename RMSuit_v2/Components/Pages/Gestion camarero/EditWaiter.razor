@@ -1,0 +1,88 @@
+﻿@page "/editwaiter/{id:int}"
+@using RMSuit_v2.Models
+@inject ApiService ApiService
+@inject ILogger<EditWaiter> Logger
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+<h3>Modificar Camarero</h3>
+
+<EditForm Model="waiter" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
+        <InputText id="nombre" class="form-control" @bind-Value="waiter.Nombre" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+</EditForm>
+
+@if (isSuccess)
+{
+    <div class="alert alert-success mt-3">Camarero modificado con éxito.</div>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private UpdateWaiterRequest waiter = new UpdateWaiterRequest();
+    private bool isSuccess = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Cargando camarero con ID: {Id}", id);
+        try
+        {
+            var waiterToEdit = await ApiService.GetWaiterById(id); 
+            if (waiterToEdit != null)
+            {
+                waiter = new UpdateWaiterRequest
+                    {
+                        Nombre = waiterToEdit.Nombre
+                    };
+            }
+            else
+            {
+                errorMessage = "Camarero no encontrado.";
+                Logger.LogWarning("Camarero con ID {Id} no encontrado.", id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error al cargar el camarero: {Message}", ex.Message);
+            errorMessage = "Hubo un error al cargar el camarero.";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSuccess = false;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var result = await ApiService.UpdateWaiter(id, waiter);
+            if (result)
+            {
+                isSuccess = true;
+                Logger.LogInformation("Camarero con ID {Id} modificado con éxito.", id);
+            }
+            else
+            {
+                errorMessage = "Hubo un error al modificar el camarero.";
+                Logger.LogError("Error al modificar el camarero con ID {Id}.", id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error al modificar el camarero: {Message}", ex.Message);
+            errorMessage = "Hubo un error al modificar el camarero.";
+        }
+    }
+}

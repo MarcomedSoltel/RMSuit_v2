@@ -1,0 +1,27 @@
+﻿@page "/salonmapa"
+@using RMSuit_v2.Components.TableComponents
+@using RMSuit_v2.Models
+
+<PageTitle>Mapa del Restaurante</PageTitle>
+
+<h3>Mapa Interactivo de Mesas</h3>
+
+<div class="tables-grid">
+    @foreach (var table in Tables)
+    {
+        <SalonMapa Table="table" />
+    }
+</div>
+
+@code {
+    private List<Table> Tables = new List<Table>();
+
+    protected override void OnInitialized()
+    {
+        // Inicializa las mesas
+        for (int i = 1; i <= 100; i++)
+        {
+            Tables.Add(new Table { Number = i.ToString() });
+        }
+    }
+}

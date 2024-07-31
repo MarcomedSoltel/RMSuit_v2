@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using RMSuit_v2.Models;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using System.Text;
+using System;
+using Microsoft.AspNetCore.Mvc;
 
     public class ApiService
     {
@@ -45,19 +48,21 @@ using System.Linq;
 
     /*  public async Task<List<string>> GetListaSalonPhotos()
       {
-          return await GetListFromApi<SalonPhoto>("https://37.59.32.58:1380/Master/SalonPhotos/GetSalonPhotos?initialCatalog=ELSIFON", sp => sp.Nombre);
+          return await GetListFromApi<SalonPhoto>("https://37.59.32.58:1380/Master/SalonPhotos/GetSalonPhotos?initialCatalog=ELSIFON");
       }
     */
     public async Task<List<Salon>> GetSalons()
     {
-        return await GetListFullFromApi<Salon>("https://37.59.32.58:1380/Master/Salons/GetSalons");
+        return await GetListFullFromApi<Salon>("https://37.59.32.58:1380/Master/Salons/GetSalons?initialCatalog=ELSIFON");
     }
 
     /*     public async Task<List<string>> GetListaSalonTables()
        {
-            return await GetListFromApi<SalonTable>("https://37.59.32.58:1380/Master/SalonTables/GetSalonTables", st => st.Nombre);
+            return await GetListFromApi<SalonTable>("https://37.59.32.58:1380/Master/SalonTables/GetSalonTables");
         }
     */
+
+    // Esa función envía UN parámetro
     private async Task<List<string>> GetListFromApi<T>(string url, Func<T, string> selector)
         {
             _logger.LogInformation("Comenzando la solicitud...");
@@ -102,6 +107,7 @@ using System.Linq;
             }
         }
 
+    // Esa función envía TODA la lista de un módelo
     private async Task<List<T>> GetListFullFromApi<T>(string url)
     {
         _logger.LogInformation("Comenzando la solicitud...");
@@ -111,7 +117,7 @@ using System.Linq;
             _logger.LogInformation($"Recibiendo datos desde la API: {url}");
 
             var httpResponseMessage = await _httpClient.GetAsync(url);
-            httpResponseMessage.EnsureSuccessStatusCode(); // Lanza una excepción si la respuesta no es exitosa
+            httpResponseMessage.EnsureSuccessStatusCode(); 
 
             var jsonString = await httpResponseMessage.Content.ReadAsStringAsync();
             _logger.LogInformation($"Respuesta JSON: {jsonString}");
@@ -129,6 +135,7 @@ using System.Linq;
                 return new List<T>();
             }
         }
+
         catch (JsonException jsonEx)
         {
             _logger.LogError(jsonEx, "Error al analizar el JSON");
@@ -143,6 +150,81 @@ using System.Linq;
         {
             _logger.LogError(ex, "Error inesperado al recibir datos");
             return new List<T>();
+        }
+    }
+
+
+    // Gestion de camareros
+
+    [HttpGet("GetWaiterById/{id}")]
+    public async Task<Camarero?> GetWaiterById(int id)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"https://37.59.32.58:1380/Master/Waiters/GetWaiterById/{id}?initialCatalog=ELSIFON");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<Camarero>(json);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError("Error al obtener camarero por ID: {Message}", ex.Message);
+            return null;
+        }
+    }
+
+
+    public async Task<bool> AddWaiter(AddWaiterRequest waiterRequest)
+    {
+        try
+        {
+            var jsonContent = new StringContent(JsonSerializer.Serialize(waiterRequest), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("https://37.59.32.58:1380/Master/Waiters/AddWaiter?initialCatalog=ELSIFON", jsonContent);
+
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError("Error al añadir camarero: {Message}", ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateWaiter(int id, UpdateWaiterRequest waiterRequest)
+    {
+        try
+        {
+            var jsonContent = new StringContent(JsonSerializer.Serialize(waiterRequest), Encoding.UTF8, "application/json");
+
+            // Log del contenido del JSON enviado
+            _logger.LogInformation("Enviando solicitud PUT a {Url} con contenido: {JsonContent}", $"https://37.59.32.58:1380/Master/Waiters/UpdateWaiter/{id}?initialCatalog=ELSIFON", JsonSerializer.Serialize(waiterRequest));
+
+            var response = await _httpClient.PutAsync($"https://37.59.32.58:1380/Master/Waiters/UpdateWaiter/{id}?initialCatalog=ELSIFON", jsonContent);
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError("Error al actualizar camarero: {Message}", ex.Message);
+            return false;
+        }
+    }
+
+
+    public async Task<bool> DeleteWaiter(int id)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"https://37.59.32.58:1380/Master/Waiters/DeleteWaiter/{id}?initialCatalog=ELSIFON");
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError("Error al eliminar camarero: {Message}", ex.Message);
+            return false;
         }
     }
 

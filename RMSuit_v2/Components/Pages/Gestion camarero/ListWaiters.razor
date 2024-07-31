@@ -1,0 +1,79 @@
+﻿@page "/listwaiters"
+@using RMSuit_v2.Models
+@inject ApiService ApiService
+@inject ILogger<ListWaiters> Logger
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+<h3>Listado de Camareros</h3>
+
+@if (waiters.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var waiter in waiters)
+            {
+                <tr>
+                    <td>@waiter.Nombre</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => NavigateToEdit(waiter.CamareroId)">Modificar</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteWaiter(waiter.CamareroId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (isLoading)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <p>No hay camareros disponibles.</p>
+}
+
+@code {
+    private List<Camarero> waiters = new List<Camarero>();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadWaiters();
+    }
+
+    private async Task LoadWaiters()
+    {
+        isLoading = true;
+        waiters = await ApiService.GetWaiters();
+        isLoading = false;
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        Navigation.NavigateTo($"/editwaiter/{id}");
+    }
+
+    private async Task DeleteWaiter(int id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "¿Está seguro de que desea eliminar este camarero?");
+        if (confirmed)
+        {
+            var result = await ApiService.DeleteWaiter(id);
+            if (result)
+            {
+                await LoadWaiters();
+            }
+            else
+            {
+                Logger.LogError("Error al eliminar el camarero.");
+            }
+        }
+    }
+}
