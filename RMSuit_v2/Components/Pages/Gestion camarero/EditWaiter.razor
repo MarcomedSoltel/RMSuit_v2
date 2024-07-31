@@ -1,5 +1,8 @@
 ﻿@page "/editwaiter/{id:int}"
 @using RMSuit_v2.Models
+@using RMSuit_v2.Services
+
+
 @inject ApiService ApiService
 @inject ILogger<EditWaiter> Logger
 @inject NavigationManager Navigation
@@ -7,30 +10,46 @@
 
 <h3>Modificar Camarero</h3>
 
-<EditForm Model="waiter" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre</label>
-        <InputText id="nombre" class="form-control" @bind-Value="waiter.Nombre" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Guardar cambios</button>
-</EditForm>
-
-@if (isSuccess)
+@if (isLoading)
 {
-    <div class="alert alert-success mt-3">Camarero modificado con éxito.</div>
+    <p>Cargando...</p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger mt-3">@errorMessage</div>
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="waiter" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <InputText id="nombre" class="form-control" @bind-Value="waiter.Nombre" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </EditForm>
+
+    /*
+    <p>Datos cargados:</p>
+    <ul>
+        <li><strong>ID:</strong> @waiter.CamareroId</li>
+        <li><strong>Nombre:</strong> @waiter.Nombre</li>
+    </ul>
+    */
+
+    @if (isSuccess)
+    {
+        <div class="alert alert-success mt-3">Camarero modificado con éxito.</div>
+    }
 }
 
 @code {
     [Parameter] public int id { get; set; }
     private UpdateWaiterRequest waiter = new UpdateWaiterRequest();
+    private bool isLoading = true;
     private bool isSuccess = false;
     private string errorMessage = string.Empty;
 
@@ -39,13 +58,15 @@ else if (!string.IsNullOrEmpty(errorMessage))
         Logger.LogInformation("Cargando camarero con ID: {Id}", id);
         try
         {
-            var waiterToEdit = await ApiService.GetWaiterById(id); 
+            var waiterToEdit = await ApiService.GetWaiterById(id);
             if (waiterToEdit != null)
             {
                 waiter = new UpdateWaiterRequest
                     {
-                        Nombre = waiterToEdit.Nombre
+                        CamareroId = waiterToEdit.CamareroId,
+                        Nombre = waiterToEdit.Nombre ?? string.Empty 
                     };
+                Logger.LogInformation("Datos del camarero cargados: ID = {Id}, Nombre = {Nombre}", waiter.CamareroId, waiter.Nombre);
             }
             else
             {
@@ -58,12 +79,18 @@ else if (!string.IsNullOrEmpty(errorMessage))
             Logger.LogError("Error al cargar el camarero: {Message}", ex.Message);
             errorMessage = "Hubo un error al cargar el camarero.";
         }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task HandleValidSubmit()
     {
         isSuccess = false;
         errorMessage = string.Empty;
+
+        Logger.LogInformation("Enviando datos para actualizar: ID = {Id}, Nombre = {Nombre}", waiter.CamareroId, waiter.Nombre);
 
         try
         {

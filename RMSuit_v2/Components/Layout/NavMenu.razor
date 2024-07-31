@@ -26,23 +26,35 @@
             </NavLink>
         </div>
         <div class="nav-item px-3 dropdown">
-            <NavLink class="nav-link  dropdown-toggle" @onclick="()=>expandSubNav=!expandSubNav">
-                <span class="bi bi-person-fill-gear" aria-hidden="true"></span>Gestión de camareros
+            <NavLink class="nav-link dropdown-toggle" @onclick="() => expandSubNavCamarero = !expandSubNavCamarero">
+                <span class="bi bi-person-fill-gear" aria-hidden="true"></span> Gestión de camareros
             </NavLink>
-            @if (expandSubNav)
+            @if (expandSubNavCamarero)
             {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="addwaiter">
-                        <span class="bi bi-lock-nav-menu"></span>Añadir Camarero
-                    </NavLink>
+                <div class="dropdown-menu show">
+                    <a class="dropdown-item" href="addwaiter">
+                        <span class="bi bi-lock-nav-menu"></span> Añadir Camarero
+                    </a>
+                    <a class="dropdown-item" href="listWaiters">
+                        <span class="bi bi-lock-nav-menu"></span> Actualizar Camarero
+                    </a>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="listWaiters">
-                        <span class="bi bi-lock-nav-menu"></span>Eliminar/Modificar Camarero
-                    </NavLink>
+            }
+        </div>
+        <div class="nav-item px-3 dropdown">
+            <NavLink class="nav-link dropdown-toggle" @onclick="() => expandSubNavEmpleado = !expandSubNavEmpleado">
+                <span class="bi bi-person-fill-gear" aria-hidden="true"></span> Gestión de empleados
+            </NavLink>
+            @if (expandSubNavEmpleado)
+            {
+                <div class="dropdown-menu show">
+                    <a class="dropdown-item" href="addemployee">
+                        <span class="bi bi-lock-nav-menu"></span> Añadir empleado
+                    </a>
+                    <a class="dropdown-item" href="listemployees">
+                        <span class="bi bi-lock-nav-menu"></span> Actualizar empleado
+                    </a>
                 </div>
-
-
             }
         </div>
 
@@ -50,8 +62,8 @@
 </div>
 
 @code {
-
-    private bool expandSubNav = true;
+    private bool expandSubNavCamarero = false;
+    private bool expandSubNavEmpleado = false;
 
 
 }

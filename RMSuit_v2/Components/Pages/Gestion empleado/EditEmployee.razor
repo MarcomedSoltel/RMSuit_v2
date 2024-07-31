@@ -1,0 +1,140 @@
+﻿@page "/editemployee/{id:int}"
+@using RMSuit_v2.Models
+@inject ApiService ApiService
+@inject ILogger<EditEmployee> Logger
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+<h3>Modificar Empleado</h3>
+
+@if (isLoading)
+{
+    <p>Cargando...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="employee" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <InputText id="nombre" class="form-control" @bind-Value="employee.nombre" />
+        </div>
+
+        <div class="mb-3">
+            <label for="direccion" class="form-label">Dirección</label>
+            <InputText id="direccion" class="form-control" @bind-Value="employee.direccion" />
+        </div>
+
+        <div class="mb-3">
+            <label for="poblacion" class="form-label">Población</label>
+            <InputText id="poblacion" class="form-control" @bind-Value="employee.poblacion" />
+        </div>
+
+        <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <InputText id="telefono" class="form-control" @bind-Value="employee.telefono" />
+        </div>
+
+        <div class="mb-3">
+            <label for="clave" class="form-label">Clave</label>
+            <InputText id="clave" class="form-control" @bind-Value="employee.clave" />
+        </div>
+
+        <div class="mb-3">
+            <label for="rango" class="form-label">Rango</label>
+            <InputText id="rango" class="form-control" @bind-Value="employee.rango" />
+        </div>
+
+        <div class="mb-3">
+            <label for="nivel" class="form-label">Nivel</label>
+            <InputNumber id="nivel" class="form-control" @bind-Value="employee.nivel" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </EditForm>
+
+    @if (isSuccess)
+    {
+        <div class="alert alert-success mt-3">Empleado modificado con éxito.</div>
+    }
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Employee employee = new Employee();
+    private bool isLoading = true;
+    private bool isSuccess = false;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logger.LogInformation("Cargando empleado con ID: {Id}", id);
+        try
+        {
+            var employeeToEdit = await ApiService.GetEmployeeById(id);
+            if (employeeToEdit != null)
+            {
+                employee = new Employee
+                    {
+                        empleado1 = employeeToEdit.empleado1,
+                        nombre = employeeToEdit.nombre ?? string.Empty,
+                        direccion = employeeToEdit.direccion ?? string.Empty,
+                        poblacion = employeeToEdit.poblacion ?? string.Empty,
+                        telefono = employeeToEdit.telefono ?? string.Empty,
+                        clave = employeeToEdit.clave ?? string.Empty,
+                        rango = employeeToEdit.rango ?? string.Empty,
+                        nivel = employeeToEdit.nivel
+                    };
+                Logger.LogInformation("Datos del empleado cargados: ID = {Id}, Nombre = {Nombre}", employee.empleado1, employee.nombre);
+            }
+            else
+            {
+                errorMessage = "Empleado no encontrado.";
+                Logger.LogWarning("Empleado con ID {Id} no encontrado.", id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error al cargar el empleado: {Message}", ex.Message);
+            errorMessage = "Hubo un error al cargar el empleado.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSuccess = false;
+        errorMessage = string.Empty;
+
+        Logger.LogInformation("Enviando datos para actualizar: ID = {Id}, Nombre = {Nombre}", employee.empleado1, employee.nombre);
+
+        try
+        {
+            var result = await ApiService.UpdateEmployee(id, employee);
+            if (result)
+            {
+                isSuccess = true;
+                Logger.LogInformation("Empleado con ID {Id} modificado con éxito.", id);
+            }
+            else
+            {
+                errorMessage = "Hubo un error al modificar el empleado.";
+                Logger.LogError("Error al modificar el empleado con ID {Id}.", id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error al modificar el empleado: {Message}", ex.Message);
+            errorMessage = "Hubo un error al modificar el empleado.";
+        }
+    }
+}

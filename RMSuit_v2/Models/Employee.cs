@@ -3,7 +3,7 @@
     public class Employee
     {
         public int empleado1 { get; set; }
-        public string nombre { get; set; }
+        public string nombre { get; set; } = string.Empty;
         public string direccion { get; set; }
         public string poblacion { get; set; }
         public string telefono { get; set; }

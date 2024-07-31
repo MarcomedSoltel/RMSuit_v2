@@ -1,0 +1,89 @@
+﻿@page "/listemployees"
+@using RMSuit_v2.Models
+@inject ApiService ApiService
+@inject ILogger<ListEmployees> Logger
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+
+<h3>Listado de Empleados</h3>
+
+@if (employees.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Población</th>
+                <th>Teléfono</th>
+                <th>Rango</th>
+                <th>Nivel</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.nombre</td>
+                    <td>@employee.direccion</td>
+                    <td>@employee.poblacion</td>
+                    <td>@employee.telefono</td>
+                    <td>@employee.rango</td>
+                    <td>@employee.nivel</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => NavigateToEdit(employee.empleado1)">Modificar</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteEmployee(employee.empleado1)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (isLoading)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <p>No hay empleados disponibles.</p>
+}
+
+@code {
+    private List<Employee> employees = new List<Employee>();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+    }
+
+    private async Task LoadEmployees()
+    {
+        isLoading = true;
+        employees = await ApiService.GetEmployees();
+        isLoading = false;
+    }
+
+    private void NavigateToEdit(int id)
+    {
+        Navigation.NavigateTo($"/editemployee/{id}");
+    }
+
+    private async Task DeleteEmployee(int id)
+    {
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "¿Está seguro de que desea eliminar este empleado?");
+        if (confirmed)
+        {
+            var result = await ApiService.DeleteEmployee(id);
+            if (result)
+            {
+                await LoadEmployees();
+            }
+            else
+            {
+                Logger.LogError("Error al eliminar el empleado.");
+            }
+        }
+    }
+}

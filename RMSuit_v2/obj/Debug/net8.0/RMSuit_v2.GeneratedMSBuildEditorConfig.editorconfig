@@ -42,6 +42,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xHZXN0aW9uIGNhbWFyZXJvXExpc3RXYWl0ZXJzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/usuario/source/repos/RMSuit_v2/RMSuit_v2/Components/Pages/Gestion empleado/AddEmployee.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xHZXN0aW9uIGVtcGxlYWRvXEFkZEVtcGxveWVlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/usuario/source/repos/RMSuit_v2/RMSuit_v2/Components/Pages/Gestion empleado/EditEmployee.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xHZXN0aW9uIGVtcGxlYWRvXEVkaXRFbXBsb3llZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/usuario/source/repos/RMSuit_v2/RMSuit_v2/Components/Pages/Gestion empleado/ListEmployees.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xHZXN0aW9uIGVtcGxlYWRvXExpc3RFbXBsb3llZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/usuario/source/repos/RMSuit_v2/RMSuit_v2/Components/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
