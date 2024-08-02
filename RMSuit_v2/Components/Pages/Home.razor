@@ -1,9 +1,13 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
+@inject ILogger<UserSelection> Logger
+@inject SalonesService SalonesService
+
 
 @using Microsoft.AspNetCore.WebUtilities
 @using RMSuit_v2.Components.TableComponents
+@using RMSuit_v2.Services.Salones;
 
 <PageTitle>Home</PageTitle>
 
@@ -18,10 +22,12 @@ else
 
     <div>
         <label for="locationSelect">Seleccione una ubicación:</label>
-        <select id="locationSelect" @bind="selectedLocation">
+        <select id="locationSelect" @bind="selectedLocationId">
             <option value="">--Seleccione una opción--</option>
-            <option value="salonmapa">Salón</option>
-            <option value="terrazamapa">Terraza</option>
+            @foreach (var salon in salones)
+            {
+                <option value="@salon.salon">@salon.nombre</option>
+            }
         </select>
         <button @onclick="NavigateToSelectedLocation">Confirmar</button>
     </div>
@@ -29,7 +35,9 @@ else
 
 @code {
     private string? UserName { get; set; }
-    private string? selectedLocation { get; set; }
+    private int? selectedLocationId { get; set; }
+    private List<Salon> salones = new List<Salon>();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,18 +54,33 @@ else
             Navigation.NavigateTo("/userselection");
         }
 
+        await LoadSalones();
+
         await base.OnInitializedAsync();
+    }
+
+    private async Task LoadSalones()
+    {
+        try
+        {
+            salones = await SalonesService.GetSalons();
+            Logger.LogInformation("Salones cargados correctamente.");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al cargar los salones.");
+        }
     }
 
     private void NavigateToSelectedLocation()
     {
-        if (!string.IsNullOrEmpty(selectedLocation))
+        if (selectedLocationId.HasValue)
         {
-            Navigation.NavigateTo($"/{selectedLocation}");
+            Navigation.NavigateTo($"/salonmapa/{selectedLocationId.Value}");
         }
         else
         {
-            // Aquí puedes manejar el caso donde no se ha seleccionado ninguna opción, por ejemplo mostrando un mensaje de error.
+            Logger.LogError("No seleccionaste ningún salón.");
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿@page "/addemployee"
 @using RMSuit_v2.Models
 
-
 @inject ApiService ApiService
 @inject ILogger<AddEmployee> Logger
 @inject NavigationManager Navigation
@@ -85,7 +84,7 @@ else
             {
                 isSuccess = true;
                 Logger.LogInformation("Empleado agregado con éxito.");
-                Navigation.NavigateTo("/employees"); // Redirigir a la lista de empleados o a otra página
+                Navigation.NavigateTo("/listemployees");
             }
             else
             {

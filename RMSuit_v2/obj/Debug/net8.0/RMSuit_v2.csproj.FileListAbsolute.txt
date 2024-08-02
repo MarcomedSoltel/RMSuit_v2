@@ -27,3 +27,6 @@ C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\obj\Debug\net8.0\refint\RMSuit
 C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\obj\Debug\net8.0\RMSuit_v2.pdb
 C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\obj\Debug\net8.0\RMSuit_v2.genruntimeconfig.cache
 C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\obj\Debug\net8.0\ref\RMSuit_v2.dll
+C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\bin\Debug\net8.0\Blazored.LocalStorage.dll
+C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\obj\Debug\net8.0\RMSuit_v2.csproj.AssemblyReference.cache
+C:\Users\usuario\source\repos\RMSuit_v2\RMSuit_v2\obj\Debug\net8.0\RMSuit_v2.csproj.Up2Date

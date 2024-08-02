@@ -25,6 +25,7 @@ namespace RMSuit_v2.Services.Salones
 
         public async Task<List<Salon>> GetSalons()
         {
+            _logger.LogInformation("Fetching salons...");
             return await GetListFullFromApi<Salon>("https://37.59.32.58:1380/Master/Salons/GetSalons?initialCatalog=ELSIFON");
         }
 

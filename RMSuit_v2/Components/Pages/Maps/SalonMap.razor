@@ -1,27 +1,118 @@
-﻿@page "/salonmapa"
-@using RMSuit_v2.Components.TableComponents
+﻿@page "/salonmapa/{id:int}"
+@inject NavigationManager Navigation
+@inject ILogger<SalonMap> Logger
+@using System.Text.Json
+@using System.Net.Http
+@using System.Net.Http.Headers
 @using RMSuit_v2.Models
+
+<style>
+    .map-container {
+        position: relative;
+        width: 100%;
+        height: 800px;
+        border: 1px solid #ccc;
+    }
+
+    .drawing-item {
+        position: absolute;
+        border: 1px solid red;
+        background-color: rgba(0, 255, 0, 0.2);
+    }
+</style>
+
 
 <PageTitle>Mapa del Restaurante</PageTitle>
 
-<h3>Mapa Interactivo de Mesas</h3>
+<h3>Mapa Interactivo</h3>
 
-<div class="tables-grid">
-    @foreach (var table in Tables)
-    {
-        <SalonMapa Table="table" />
-    }
-</div>
+@if (salonResponse == null)
+{
+    <p>Cargando detalles del salón...</p>
+}
+else
+{
+    <div class="map-container">
+        @if (salonResponse.dibujos != null && salonResponse.dibujos.Any())
+        {
+            @foreach (var dibujo in salonResponse.dibujos)
+            {
+                var salonDetail = salonResponse.mesas
+                .FirstOrDefault(m => m.dibujos == dibujo.salonDetailId);
+
+                if (salonDetail != null)
+                {
+                    <div class="drawing-item"
+                         style="left:@salonDetail.posicionX}px; top:@salonDetail.posicionY}px;">
+                        <p>@dibujo.estado</p>
+                        @if (!string.IsNullOrEmpty(dibujo.grafico))
+                        {
+                            <img src="data:image/jpeg;base64,@dibujo.grafico" alt="@dibujo.estado" style="max-width:100px; max-height:100px;" />
+                        }
+                        else
+                        {
+                            <p>No hay imagen disponible.</p>
+                        }
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <p>No se encontraron dibujos para este salón.</p>
+        }
+    </div>
+}
 
 @code {
-    private List<Table> Tables = new List<Table>();
+    [Parameter] public int id { get; set; }
+    private SalonResponse? salonResponse;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Inicializa las mesas
-        for (int i = 1; i <= 100; i++)
+        await LoadSalonDetail();
+    }
+
+    private async Task LoadSalonDetail()
+    {
+        try
         {
-            Tables.Add(new Table { Number = i.ToString() });
+            using var client = new HttpClient(new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                });
+
+            var url = $"https://37.59.32.58:1380/Master/Salons/GetSalonDetail/{id}?includeDrawings=true&initialCatalog=ELSIFON";
+            var response = await client.GetStringAsync(url);
+//            Logger.LogInformation($"Respuesta JSON: {response}");
+
+            var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    PropertyNameCaseInsensitive = true
+                };
+
+            salonResponse = JsonSerializer.Deserialize<SalonResponse>(response, options);
+            if (salonResponse != null)
+            {
+                
+
+                              Logger.LogInformation($"Detalles del salón: {JsonSerializer.Serialize(salonResponse)}");
+                //              Logger.LogInformation($"Salon: {JsonSerializer.Serialize(salonResponse.salon)}");
+                //              Logger.LogInformation($"Mesas: {JsonSerializer.Serialize(salonResponse.mesas)}");
+                //              Logger.LogInformation($"Dibujos: {JsonSerializer.Serialize(salonResponse.dibujos)}");
+                              Logger.LogInformation("Detalles del salón cargados correctamente.");
+            }
+            else
+            {
+                Logger.LogWarning("No se encontró el salón en la respuesta.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al cargar los detalles del salón.");
         }
     }
 }
+
+
