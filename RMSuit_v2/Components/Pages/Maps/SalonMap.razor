@@ -1,24 +1,50 @@
 ﻿@page "/salonmapa/{id:int}"
 @inject NavigationManager Navigation
 @inject ILogger<SalonMap> Logger
+@inject IJSRuntime JSRuntime
+
+
 @using System.Text.Json
 @using System.Net.Http
 @using System.Net.Http.Headers
 @using RMSuit_v2.Models
+@using Microsoft.JSInterop
 
 <style>
     .map-container {
         position: relative;
         width: 100%;
-        height: 800px;
+        height: 1200px;
         border: 1px solid #ccc;
+        overflow: hidden;
     }
+
+    .zoom-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform-origin: top left;
+        transition: transform 0.3s;
+    }
+
+
 
     .drawing-item {
         position: absolute;
         border: 1px solid red;
         background-color: rgba(0, 255, 0, 0.2);
+        width: 100px;
+        height: 100px;
     }
+
+        .drawing-item img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
 </style>
 
 
@@ -33,40 +59,71 @@
 else
 {
     <div class="map-container">
-        @if (salonResponse.dibujos != null && salonResponse.dibujos.Any())
-        {
-            @foreach (var dibujo in salonResponse.dibujos)
+        <div class="zoom-container" style="transform: scale(1);">
+            @if (salonResponse.dibujos != null && salonResponse.dibujos.Any())
             {
-                var salonDetail = salonResponse.mesas
-                .FirstOrDefault(m => m.dibujos == dibujo.salonDetailId);
+                var orderedDrawings = salonResponse.dibujos
+                .OrderBy(d => d.estado == "D")
+                .ThenBy(d => d.estado)
+                .ToList();
 
-                if (salonDetail != null)
+                var occupiedPositions = new HashSet<(int, int)>();
+
+                @foreach (var dibujo in orderedDrawings)
                 {
-                    <div class="drawing-item"
-                         style="left:@salonDetail.posicionX}px; top:@salonDetail.posicionY}px;">
-                        <p>@dibujo.estado</p>
-                        @if (!string.IsNullOrEmpty(dibujo.grafico))
+                    var salonDetails = salonResponse.mesas
+                    .Where(m => m.dibujos == dibujo.dibujos)
+                    .ToList();
+
+                    foreach (var salonDetail in salonDetails)
+                    {
+                        int adjustedLeft = (int)(salonDetail.posicionX);
+                        int adjustedTop = (int)(salonDetail.posicionY);
+
+                        // Aplicar el ratio de pantalla
+                        int ratioAdjustedTop = (int)(adjustedTop * ratioPantalla);
+                        int ratioAdjustedLeft = (int)(adjustedLeft * ratioPantalla);
+
+                        var adjustedPosition = (ratioAdjustedTop, ratioAdjustedLeft);
+
+                        Logger.LogInformation($"ID Dibujo: {dibujo.dibujos}, Estado: {dibujo.estado}, Posición Ajustada: (top: {adjustedTop}, left: {adjustedLeft}), Ratio: {ratioPantalla}");
+
+                        if (dibujo.estado == "D" || !occupiedPositions.Contains(adjustedPosition))
                         {
-                            <img src="data:image/jpeg;base64,@dibujo.grafico" alt="@dibujo.estado" style="max-width:100px; max-height:100px;" />
+                            Logger.LogInformation($"Procesando dibujo con ID: {dibujo.dibujos}, Posición: (top: {adjustedPosition.Item1}, left: {adjustedPosition.Item2})");
+                            occupiedPositions.Add(adjustedPosition);
+
+                            <div class="drawing-item"
+                                style="top:@(adjustedPosition.Item1 + "px"); left:@(adjustedPosition.Item2 + "px");">
+                                @if (!string.IsNullOrEmpty(dibujo.grafico))
+                                @if (!string.IsNullOrEmpty(dibujo.grafico))
+                                {
+                                    Logger.LogInformation($"PROCESADO dibujo con ID: {dibujo.dibujos}, Posición: (top: {adjustedPosition.Item1}, left: {adjustedPosition.Item2})");
+
+                                    <img src="data:image/jpeg;base64,@dibujo.grafico" alt="@dibujo.estado" />
+                                }
+                                else
+                                {
+                                    Logger.LogInformation($"El dibujo con ID está vacío: {dibujo.dibujos}");
+                                    <p>No hay imagen disponible.</p>
+                                }
+                            </div>
                         }
-                        else
-                        {
-                            <p>No hay imagen disponible.</p>
-                        }
-                    </div>
+                    }
                 }
             }
-        }
-        else
-        {
-            <p>No se encontraron dibujos para este salón.</p>
-        }
+            else
+            {
+                <p>No se encontraron dibujos para este salón.</p>
+            }
+        </div>
     </div>
 }
 
 @code {
     [Parameter] public int id { get; set; }
     private SalonResponse? salonResponse;
+    private double ratioPantalla = 1.0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,6 +170,22 @@ else
             Logger.LogError(ex, "Error al cargar los detalles del salón.");
         }
     }
+
+    private async Task<double> CalculateScreenRatio()
+    {
+        return await JSRuntime.InvokeAsync<double>("calculateScreenRatio", Array.Empty<object>());
+    }
 }
 
+<script>
+    window.calculateScreenRatio = () => {
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let ratio = 1.0; 
+        let baseWidth = 1920;
+        let baseHeight = 1080;
 
+        ratio = Math.min(width / baseWidth, height / baseHeight);
+        return ratio;
+    };
+</script>
